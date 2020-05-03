@@ -1,5 +1,5 @@
 {
-    "name": "cityshaper",
+    "name": "CityShaper",
     "version": "0.0.0",
     "description": "",
     "dependencies": {
@@ -7,7 +7,13 @@
     },
     "files": [
         "README.md",
-        "main.ts"
+        "main.ts",
+        "menu.ts",
+        "crane.ts",
+        "swing.ts",
+        "blocksBlack.ts",
+        "blocksTan.ts",
+        "blocksRed.ts"
     ],
     "testFiles": [
         "test.ts"
