@@ -110,6 +110,7 @@ namespace Menu {
         if (internal) {
             if (item != 0) {
                 configs[item - 1].run();
+                missionReset();
                 redraw = true;
             }
         } else {
