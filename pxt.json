@@ -13,11 +13,13 @@
         "swing.ts",
         "blocksBlack.ts",
         "blocksTan.ts",
-        "blocksRed.ts"
+        "blocksRed.ts",
+        "cal_gyro.ts",
+        "cal_color.ts",
+        "fonts.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
-    "public": false,
-    "additionalFilePaths": []
+    "public": false
 }

@@ -1,5 +1,4 @@
 namespace Menu {
-    const font16 = image.doubledFont(image.font8);
     let internal: boolean;
     let mission: number;
     let item: number;
@@ -7,7 +6,7 @@ namespace Menu {
 
     export interface MenuList {
         name: string;
-        func: () => void;
+        run: () => void;
     }
 
     function missionPrevious() {
@@ -50,31 +49,80 @@ namespace Menu {
         brick.buttonEnter.wasPressed();
     }
 
-    function calibrateGyro() {
-        let i: number;
-
-        brick.font = font16;
-        for (i = 0; i < 3; i++) {
-            brick.clearScreen();
-            brick.showString((3 - i).toString(), 4);
-            pause(1000);
+    function draw() {
+        brick.clearScreen();
+        brick.font = fonts.font16;
+        if (internal) {
+            if (item == 0) {
+                brick.showPorts();
+            } else {
+                brick.showString(configs[item - 1].name, 4);
+            }
+        } else {
+            if (mission != 0) {
+                brick.showString("^", 1);
+            }
+            brick.showString("Mission " + (mission + 1).toString(), 3);
+            brick.showString(missions[mission].name, 5);
+            if (mission != (missions.length - 1)) {
+                brick.showString("v", 7);
+            }
         }
-        brick.clearScreen();
-        brick.showString("Calibrating", 4);
-        sensors.gyro1.calibrate();
+        redraw = false;
     }
 
-    function calibrateColor() {
-        brick.clearScreen();
-        brick.font = font16;
-        brick.showString("Calibrating", 4);
-
-        motors.largeBC.steer(0, 10);
-        sensors.color2.calibrateLight(LightIntensityMode.Reflected);
-        motors.largeBC.stop();
+    function up() {
+        if (internal && (item != 0)) {
+            item--;
+            redraw = true;
+        }
+        else if (!internal) {
+            missionPrevious();
+        }
     }
 
-    export function run(missions: MenuList[]) {
+    function down() {
+        if (internal && (item < configs.length)) {
+            item++;
+            redraw = true;
+        }
+        else if (!internal) {
+            missionNext();
+        }
+    }
+
+    function left() {
+        if (!internal) {
+            internal = true;
+            item = 0;
+            redraw = true;
+        }
+    }
+
+    function right() {
+        if (internal) {
+            internal = false;
+            redraw = true;
+        }
+    }
+
+    function enter() {
+        if (internal) {
+            if (item != 0) {
+                configs[item - 1].run();
+                redraw = true;
+            }
+        } else {
+            brick.showString("Running...", 3);
+            missionPrepare();
+            missions[mission].run();
+            missionReset();
+            missionNext();
+            redraw = true;
+        }
+    }
+
+    export function run(configs: MenuList[], missions: MenuList[]) {
         internal = true;
         mission = 0;
         item = 0;
@@ -84,84 +132,29 @@ namespace Menu {
 
         while (true) {
             if (redraw) {
-                brick.clearScreen();
-                brick.font = font16;
-                if (internal) {
-                    if (item == 0) {
-                        brick.showPorts();
-                    } else if (item == 1) {
-                        brick.showString("Gyro", 3);
-                        brick.showString("Calibrate", 4);
-                    } else {
-                        brick.showString("Color", 3);
-                        brick.showString("Calibrate", 4);
-                    }
-                } else {
-                    if (mission != 0) {
-                        brick.showString("^", 1);
-                    }
-                    brick.showString("Mission " + (mission + 1).toString(), 3);
-                    brick.showString(missions[mission].name, 5);
-                    if (mission != (missions.length - 1)) {
-                        brick.showString("v", 7);
-                    }
-                }
-                redraw = false;
+                draw();
             }
 
             pause(100);
 
             if (brick.buttonUp.wasPressed()) {
-                if (internal && (item != 0)) {
-                    item--;
-                    redraw = true;
-                }
-                else if (!internal) {
-                    missionPrevious();
-                }
+                up();
             }
 
             if (brick.buttonDown.wasPressed()) {
-                if (internal && (item < 2)) {
-                    item++;
-                    redraw = true;
-                } else if (!internal) {
-                    missionNext();
-                }
+                down();
             }
 
             if (brick.buttonLeft.wasPressed()) {
-                if (!internal) {
-                    internal = true;
-                    item = 0;
-                    redraw = true;
-                }
+                left();
             }
 
             if (brick.buttonRight.wasPressed()) {
-                if (internal) {
-                    internal = false;
-                    redraw = true;
-                }
+                right();
             }
 
             if (brick.buttonEnter.wasPressed()) {
-                if (internal) {
-                    if (item == 1) {
-                        calibrateGyro();
-                        redraw = true;
-                    } else if (item == 2) {
-                        calibrateColor();
-                        redraw = true;
-                    }
-                } else {
-                    brick.showString("Running...", 3);
-                    missionPrepare();
-                    missions[mission].func();
-                    missionReset();
-                    missionNext();
-                    redraw = true;
-                }
+                enter();
             }
         }
     }
